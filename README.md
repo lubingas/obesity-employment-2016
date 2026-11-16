@@ -1,6 +1,6 @@
 # Obesity and employment duration (2016)
 
-Do obese workers leave employment sooner? This is my UW CSSS 544 (event history analysis) project from 2016, rebuilt in 2026. Every estimator is now written out in R and maximised with `optim`, including the frailty model I originally fitted in mle.
+Do obese workers leave employment sooner? This is my UW CSSS 544 (event history analysis) project from 2016, partly built in R at the time. In 2026 I fixed and streamlined the code, now fitting every model with `optim`, and rebuilt in R the frailty model I originally fitted in mle.
 
 **Poster:** [`prj_poster.pdf`](prj_poster.pdf) (revised November 2026). The poster as presented in March 2016 is [`prj_poster_2016.pdf`](prj_poster_2016.pdf).
 
@@ -40,11 +40,11 @@ Obese workers had about a 20% higher hazard of leaving employment.
   - With BMI alone and delayed entry, σ = 0.83 (p < 0.001). Here the frailty stands in for the omitted covariates.
   - Across the six baselines with normal or gamma frailty, a frailty appears only with too few covariates or a rigid baseline.
 
-## The 2026 rebuild
+## The 2026 update
 
 The 2016 code (`Data/prj_analysis.R`, left as it was) fitted the parametric models with `maxLik` and used `survfit()`, `coxph()` and `cox.zph()` for the rest. It also contained my own Kaplan–Meier and Cox partial-likelihood functions. The Cox one never ran: its risk-set vectors were not set up inside the function, and its design matrix came from a data frame that didn't exist.
 
-The rebuild in `R/` finishes that job:
+The update in `R/` fixes and streamlines that code and finishes the job:
 
 - **Shared design matrix:** one design matrix from `makeX()`, and the linear predictor is always `xb <- linpred(beta, x)`.
 - **Kaplan–Meier and log-rank test:** written with left-truncated risk sets, counted with sorted sums instead of loops.
