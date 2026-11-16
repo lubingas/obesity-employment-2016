@@ -1,343 +1,221 @@
-\documentclass[graphics,final]{beamer}
-\mode<presentation>{\usetheme{default}}
-\usecolortheme{default}
-
-\usepackage[size=custom,width=60,height=48,scale=1,debug]{beamerposter}
-\usepackage[absolute,overlay]{textpos}
-\usepackage{amsmath,amsfonts,amsthm,amssymb,xspace}
-\usepackage{pgfplots}
-\usepackage{tikz}
-\usepackage{rotating}
-\usetikzlibrary{arrows,automata,shapes,external}
-\usepackage{graphicx}
-\usepackage{multirow}
-\usepackage[font = small]{caption}
-%\usepackage{extsizes} % Enable the use of different font sizes.
-\usepackage{booktabs} % More complex tables
-\usepackage{hyperref}
-\usepackage{transparent, parskip}
-\pgfplotsset{compat=newest}
-%\usepgfplotslibrary{colorbrewer}
-
-% set up externalization
-%\usepgfplotslibrary{external}
-%\tikzexternalize[shell escape=-enable-write18]
-%\tikzset{external/system call={latex \tikzexternalcheckshellescape -halt-on-error -interaction=batchmode -jobname "\image" %"\texsource" && 
-%		dvips -o "\image".eps "\image".dvi &&
-%		ps2eps "\image.eps"}}
-
-%\usepackage[texcoord,grid,gridunit=mm,gridcolor=red!10,subgridcolor=green!10]{eso-pic}
-%\usetikzlibrary{colorbrewer}
-\usefonttheme{professionalfonts} % using non standard fonts for beamer
-\usefonttheme{serif} % default family is serif
+% Obesity and employment duration: continuous-time hazards analyses
+% CSSS 544 course project (2016), revised November 2026.
+% Compile with:  xelatex prj_poster.tex   (fonts are loaded from fonts/, SIL Open Font License)
+% Figures and Table 1 are written by R/06_poster.R into figures/.
+\documentclass{article}
+\usepackage[paperwidth=60cm, paperheight=48cm, margin=0cm]{geometry}
 \usepackage{fontspec}
-%\setmainfont{Avenir Next LT Pro}
-% 2026: the 2016 fonts, loaded from fonts/ so the poster compiles anywhere (SIL OFL).
-% Encode Sans "Compressed" is now called "ExtraCondensed"; Stencil was never used.
-\defaultfontfeatures{Path = fonts/, Extension = .ttf}
-\setmainfont{EncodeSansExtraCondensed-Regular}
-%\setmonofont{Inconsolata}
-\newfontface\tfont{OpenSans-CondensedBold}
-\newfontface\ftfont{EncodeSansExtraCondensed-Regular}
-\newfontface\mfont{EncodeSansExtraCondensed-Regular}
-\newfontface\fstfont{EncodeSansExtraCondensed-Regular}
-\newfontface\abfont{EncodeSansExtraCondensed-Regular}
-\newfontface\instfont{EncodeSansExtraCondensed-Regular}
-\newfontface\tbfont{EncodeSansNormal-Regular}
-%\newfontface\ttfont{Stencil}
+\usepackage{unicode-math}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{ragged2e}
+\usepackage[hidelinks]{hyperref}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
 
-\definecolor{shadec}{RGB}{216,217,218}
-\definecolor{uwpurple}{RGB}{51,0,111}
-\definecolor{uwmetgold}{RGB}{145,123,76}
-\definecolor{mynicegreen}{RGB}{0,204,102}
-\definecolor{myniceorange}{RGB}{255,79,57}
-\definecolor{mypup}{RGB}{50,136,189}
-\definecolor{apup}{RGB}{136,86,167}
-\definecolor{myred}{RGB}{213,62,79}
-\definecolor{ared}{RGB}{177,0,39}
-\colorlet{boxshade}{gray!3}
+% ---- fonts: the website's pair ----
+\defaultfontfeatures{Ligatures = TeX}
+% Source Serif 4 for prose and headings, Inter for labels, figures and the table
+\setmainfont{SourceSerif4}[Path = fonts/, Extension = .otf, UprightFont = *-Regular, ItalicFont = *-It,
+  BoldFont = *-Semibold, BoldItalicFont = *-SemiboldIt]
+\setsansfont{Inter}[Path = fonts/, Extension = .otf, UprightFont = *-Regular, ItalicFont = *-Italic,
+  BoldFont = *-SemiBold]
+\newfontfamily\intermed{Inter-Medium}[Path = fonts/, Extension = .otf]
+\newfontfamily\tabfont{Inter}[Path = fonts/, Extension = .otf, UprightFont = *-Regular, ItalicFont = *-Italic,
+  BoldFont = *-SemiBold, Numbers = Monospaced]
+\newfontfamily\serifsemi{SourceSerif4-Semibold}[Path = fonts/, Extension = .otf]
+\newfontfamily\seriflight{SourceSerif4-Light}[Path = fonts/, Extension = .otf]
+% maths: Latin Modern Math for symbols, Source Serif 4 for letters and digits
+\setmathfont{Latin Modern Math}
+\setmathfont{SourceSerif4-It.otf}[Path = fonts/, range = it/{latin,Latin,greek,Greek}]
+\setmathfont{SourceSerif4-Regular.otf}[Path = fonts/, range = {up/{latin,Latin,num,Greek}, "2212}]
 
-\setbeamertemplate{caption}[numbered]
+% ---- colours: the website's light palette ----
+\definecolor{panel}{HTML}{17213A}
+\definecolor{panelfg}{HTML}{EEECE6}
+\definecolor{panelmuted}{HTML}{A7B1C6}
+\definecolor{panelaccent}{HTML}{A9C3E6}
+\definecolor{accent}{HTML}{2C5282}
+\definecolor{accentlight}{HTML}{EBF0F8}
+\definecolor{fg}{HTML}{1A1A17}
+\definecolor{fgsoft}{HTML}{3B3A35}
+\definecolor{muted}{HTML}{5C5B55}
+\definecolor{border}{HTML}{E2E1DC}
+\color{fg}
 
-\colorlet{shadecolor}{gray!3}
-%\setbeamercolor{normal text}{bg=shadecolor}
-\setbeamercolor{frametitle}{fg=uwpurple}
-\setbeamercolor{framesubtitle}{fg=uwmetgold}
-\setbeamercolor{title}{fg=uwpurple}
-\setbeamercolor{subtitle}{fg=uwmetgold}
-\setbeamercolor{author}{fg=black}
-\setbeamercolor{institute}{fg=black}
-\setbeamertemplate{enumerate items}[ball]
-\setbeamercolor{block title}{fg=black}
-\setbeamerfont{block title}{size=\normalsize}
-\setbeamerfont{text block}{size=\footnotesize, family=\mfont\selectfont}
+% ---- building blocks ----
+\newcommand{\bodysize}{\fontsize{13}{18.5}\selectfont\RaggedRight}
+\newcommand{\sect}[1]{\par\vspace{0.75em}{\serifsemi\fontsize{27}{32}\selectfont\color{fg}#1}\par\vspace{0.15em}%
+  {\color{accent}\rule{\linewidth}{1.6pt}}\par\vspace{0.3em}}
+\newcommand{\model}[2]{\par\vspace{0.4em}{\intermed\fontsize{14.5}{18}\selectfont
+  \tikz[baseline=(n.base)]\node[fill=accent, text=white, circle, inner sep=1.6pt, minimum size=1.35em, font=\intermed\fontsize{12}{12}\selectfont](n){#1};%
+  \hspace{0.35em}\color{accent}#2}\par\vspace{0.1em}}
+\newcommand{\figcap}[2]{\par\vspace{0.15em}{\sffamily\fontsize{11.5}{16}\selectfont\color{muted}%
+  {\color{fg}\textbf{#1}}\hspace{0.4em}#2}\par}
+\newcommand{\fig}[1]{{\sffamily\fontsize{11}{13.2}\selectfont\input{figures/#1}}}
+\newcommand{\lab}[1]{{\sffamily\fontsize{11}{13}\selectfont\color{muted}#1}}
+\setlist[itemize]{leftmargin=1.1em, itemsep=0.15em, topsep=0.1em, label={\color{accent}\textbullet}}
 
-\setbeamerfont{title}{family=\tfont\selectfont}
-\setbeamertemplate{navigation symbols}{}
-\setbeamerfont{subtitle}{family=\fstfont\selectfont}
-% Font of the frame titles
-\setbeamerfont{frametitle}{family=\ftfont\selectfont}
-% Font of the frame subtitles
-\setbeamerfont{framesubtitle}{family=\fstfont\selectfont}
-\setbeamerfont{author}{family=\abfont\selectfont}
-\setbeamerfont{institute}{family=\instfont\selectfont}
-\hypersetup{colorlinks = true, urlcolor = magenta}
+\newlength{\colw}\setlength{\colw}{18.1cm}
+\newlength{\gutter}\setlength{\gutter}{1.25cm}
 
 \begin{document}
-\begin{center}
-	\begin{textblock*}{\textwidth}(10mm,8mm)
-		\tbfont \fontsize{40pt}{30pt}\selectfont \textcolor{uwpurple}{Obesity and Employment Duration: Continuous-Time Hazards Analyses}
-	\end{textblock*}
-	
-	\begin{textblock*}{600mm}(10mm,25mm)
-		\mfont \textcolor{black}{Solomon J. Lubinga}
-	\end{textblock*}
-	
-	\begin{textblock*}{\textwidth}(10mm,37mm)
-		\mfont \textcolor{black}{Pharmaceutical Outcomes Research and Policy Program, University of Washington}
-	\end{textblock*}
-	
-	\begin{textblock*}{\textwidth}(10mm,50mm)
-		\begin{tikzpicture}[]
-		\draw [line width=5pt, uwpurple](0,0) -- (58,0);
-		\end{tikzpicture}
-	\end{textblock*}
-	
-\end{center}
-
-\begin{textblock*}{\textwidth}(10mm,60mm)
-\tfont \fontsize{40pt}{50pt}\selectfont Introduction
-\end{textblock*}
-
-	\begin{textblock*}{\textwidth}(10mm,75mm)
-		\begin{tikzpicture}[]
-		\draw [line width=2pt, uwpurple](0,0) -- (29,0);
-		\end{tikzpicture}
-	\end{textblock*}
-
-
-\begin{textblock*}{280mm}(10mm,80mm)
-	\small
-	Defined as a Body Mass Index (BMI) $\geq 30$
-	
-	Prevalence among US adults increased from 16\% in the 1960s to 35.7\%
-	
-	Key contributor to morbidity and mortality (from other diseases), and overall health care expenditures
-	
-	Weight discrimination at the workplace reported in several studies. Most use self reports or experimental vignettes
-	
-	I examine whether there are differences in the duration of employment between obese and non-obese individuals 
-\end{textblock*}
-
-\begin{textblock*}{\textwidth}(10mm,160mm)
-\tfont \fontsize{40pt}{50pt}\selectfont Methods
-\end{textblock*}
-
-	\begin{textblock*}{\textwidth}(10mm,175mm)
-		\begin{tikzpicture}[]
-		\draw [line width=2pt, uwpurple](0,0) -- (29,0);
-		\end{tikzpicture}
-	\end{textblock*}
-
-\begin{textblock*}{\textwidth}(10mm,180mm)
-\tfont \fontsize{36pt}{50pt}\selectfont \textcolor{myniceorange} {The Medical Expenditure Panel Survey}
-\end{textblock*}
-
-\begin{textblock*}{280mm}(10mm,198mm)
-	\small
-	A survey of the US non-institutionalized population; overlapping annual panels--two years of data collected in five interview rounds over two and half years
-	
-	Two types of messiness: 1) left truncation and 2) right censoring
-\end{textblock*}
-
-\begin{textblock*}{\textwidth}(10mm,228mm)
-\tfont \fontsize{36pt}{50pt}\selectfont \textcolor{mynicegreen} {Statistical Analyses}
-\end{textblock*}
-
-\begin{textblock*}{\textwidth}(10mm,243mm)
-\tfont \fontsize{30pt}{10pt}\selectfont \textcolor{cyan}{Kaplan-Meier survival estimates of time to first exit from employment}
-\end{textblock*}
-
-\begin{textblock*}{290mm}(10mm,252mm)
-	\small
-	\begin{equation*}
-	\begin{split}
-	\hat{S}_{{\alpha}_{min}}(t) = \Pr(T > t|T\geq \alpha_{min}) = \prod_{X_k \leq t}\bigg(1-\frac{d}{n_k}\bigg) ~~ n_k = \# \{j: \alpha_j \leq x_k \leq x_j\}
-	\end{split}
-	\end{equation*}
-\end{textblock*}
-
-\begin{textblock*}{\textwidth}(2mm,240mm)
-	\begin{tikzpicture}[]
-	\node[text opacity=0.2] at (0,0) {\tfont \fontsize{68pt}{90pt}\selectfont \textcolor{cyan}{1}};
-	\end{tikzpicture}
-\end{textblock*}
-
-\begin{textblock*}{\textwidth}(2mm,278mm)
-	\begin{tikzpicture}[]
-	\node[text opacity=0.2] at (0,0) {\tfont \fontsize{68pt}{90pt}\selectfont \textcolor{cyan}{2}};
-	\end{tikzpicture}
-\end{textblock*}
-
-\begin{textblock*}{290mm}(10mm,283mm)
-\tfont \fontsize{30pt}{10pt}\selectfont \textcolor{cyan}{A Cox proportional hazards model}
-\end{textblock*}
-
-\begin{textblock*}{290mm}(10mm,292mm)
-	\small
-	\begin{equation*}
-	\mathcal{PL} = \prod_{i = 1}^n \left(\frac{e^{x_i\beta}}{\sum\limits_{j \in R(x)} e^{x_j \beta}}\right) ~~ R(x) = \{j: \alpha_j \leq x_i \leq x_j\}
-	\end{equation*}
-\end{textblock*}
-
-\begin{textblock*}{10mm}(2mm,330mm)
-\begin{tikzpicture}[]
-  \node[text opacity=0.2] at (0,0) {\tfont \fontsize{68pt}{90pt}\selectfont \textcolor{cyan}{3}};
+% ======================================================================
+% header: the website's dark identity panel
+% ======================================================================
+\begin{tikzpicture}[remember picture, overlay]
+  \fill[panel] (current page.north west) rectangle ([yshift=-6.4cm]current page.north east);
+  \fill[accent] ([yshift=-6.4cm]current page.north west) rectangle ([yshift=-6.55cm]current page.north east);
+  \node[anchor=north west, align=left, inner sep=0pt] at ([xshift=1.6cm, yshift=-1.15cm]current page.north west)
+    {{\serifsemi\fontsize{44}{50}\selectfont\color{panelfg}Obesity and Employment Duration: Continuous-Time Hazards Analyses}\\[0.6cm]
+     {\intermed\fontsize{21}{26}\selectfont\color{panelfg}Solomon J. Lubinga}\\[0.2cm]
+     {\sffamily\fontsize{16}{20}\selectfont\color{panelmuted}The Comparative Health Outcomes, Policy, and Economics (CHOICE) Institute, University of Washington*}\\[0.15cm]
+     {\sffamily\fontsize{12}{15}\selectfont\color{panelmuted}*Formerly}};
+  \node[anchor=south east, align=right, inner sep=0pt] at ([xshift=-1.6cm, yshift=-5.55cm]current page.north east)
+    {\sffamily\fontsize{15}{21}\selectfont\color{panelmuted}%
+     \begin{tabular}{@{}r@{}}
+       CSSS 544 course project, March 2016\\
+       {\color{panelfg}Revised November 2026}\\
+       {\color{panelaccent}github.com/lubingas/obesity-employment-2016}
+     \end{tabular}};
 \end{tikzpicture}
-\end{textblock*}
 
-\begin{textblock*}{290mm}(10mm,333mm)
-	\tfont \fontsize{30pt}{10pt}\selectfont \textcolor{cyan}{Log-normal proportional hazards models} {\mfont \footnotesize \textcolor{black}{(frailty integral: Gauss–Hermite quadrature in R)}}
-\end{textblock*}
+\vspace*{6.6cm}
+\hspace*{1.6cm}%
+% ======================================================================
+% column 1: introduction, data, methods
+% ======================================================================
+\begin{minipage}[t]{\colw}
+\bodysize
+\sect{Introduction}
+Obesity, a body mass index (BMI) of 30 or more, rose among US adults from 16\% in the 1960s to 35.7\%.
+It is a key contributor to morbidity, mortality and health care spending.
 
-\begin{textblock*}{270mm}(10mm,342mm)
-	\small
-	\begin{equation*}
-	\begin{split}
-	\mathcal{L} = \prod_{i = 1}^n \left(\frac{\big[f(t)S(t)^{e^{x\beta}-1}e^{x\beta}\big]^{\delta_i} \big[S(t)^{e^{x\beta}}\big]^{1-\delta_i}}{S(t_{\alpha})^{e^{x\beta}}}\right) \\
-	\mathcal{L} = \prod_{i = 1}^n \int\limits_{-\infty}^{\infty}g(z|0,\sigma) \left(\frac{\big[f(t)S(t)^{e^{x\beta+z}-1}e^{x\beta+z}\big]^{\delta_i} \big[S(t)^{e^{x\beta+z}}\big]^{1-\delta_i}}{S(t_{\alpha})^{e^{x\beta+z}}}\right)
-	\end{split}
-	\end{equation*}
-\end{textblock*}
+Weight discrimination at work is reported in several studies, mostly from self-reports or experimental vignettes.
 
-%\begin{textblock*}{270mm}(10mm,395mm)
-%	\begin{equation*}
-%	\begin{split}
-%	f(t) = \frac{1}{tb\sqrt{2\pi}}e^{\left(\frac{-[ln(t)-a]^2}{2b^2}\right)} ~~~ S(t) = 1- \Phi \left( \frac{-[ln(t)-a]^2}{2b^2} \right) 
-%	\end{split}
-%	\end{equation*}
-%\end{textblock*}
+\textbf{Question:} do obese and non-obese workers differ in how long they stay employed?
 
+\sect{Data}
+\textbf{The Medical Expenditure Panel Survey (MEPS)} follows overlapping panels of the US civilian
+non-institutionalised population, each interviewed five times over about two and a half years.
+This analysis uses Panel 14 (2009--2010).
+\begin{itemize}
+  \item \textbf{6,075 workers} aged 17--55; \textbf{1,131} left employment during follow-up.
+  \item \textbf{Clock:} years since the current job started. Jobs already under way when follow-up began are
+        \emph{left-truncated} at the tenure reached then (1,227 jobs began during follow-up). People still
+        employed at the last interview are \emph{right-censored}.
+  \item \textbf{Exposure:} obese if the mean BMI over rounds 3 and 5 was above 30 (1,682, 28\%).
+  \item \textbf{Covariates:} age, sex, race, marital status, insurance and income.
+\end{itemize}
 
-\begin{textblock*}{\textwidth}(320mm,60mm)
-\tfont \fontsize{40pt}{50pt}\selectfont Results
-\end{textblock*}
+\sect{Statistical analyses}
+Person $i$ enters at $\alpha_i$ and leaves or is censored at $t_i$; $\delta_i = 1$ marks an exit.
+Everyone with $\alpha_j < t \le t_j$ is at risk at time $t$.
 
-\begin{textblock*}{120mm}(320mm,70mm)
-\begin{figure}
-\input{kmlog.tex}
-\vspace{-40pt}
-\caption{\footnotesize Kaplan-Meier estimates by BMI overlayed with lognormal and weibull curves}
-\end{figure}
-\end{textblock*}
+\model{1}{Kaplan--Meier estimates and the log-rank test}
+\[
+\hat S(t) = \prod_{t_k \le t}\Bigl(1 - \frac{d_k}{n_k}\Bigr), \qquad n_k = \#\{j : \alpha_j < t_k \le t_j\}
+\]
+The log-rank test uses the same left-truncated risk sets.
 
-\begin{textblock*}{120mm}(460mm,70mm)
-\begin{figure}
-\input{phcheck.tex}
-\vspace{-40pt}
-\caption{\footnotesize $\log(-\log(S(t)))$ versus $\log$(time), a check for the proportional hazards assumption}
-\end{figure}
-\end{textblock*}
+\model{2}{Cox proportional hazards model}
+\[
+\mathcal{PL}(\beta) = \prod_{i=1}^{n}\left(\frac{e^{x_i\beta}}{\sum_{j \in R(t_i)} e^{x_j\beta}}\right)^{\!\delta_i},
+\qquad R(t) = \{j : \alpha_j < t \le t_j\}
+\]
+Tied exits share one risk set (Breslow).
 
-\begin{textblock*}{80mm}(320mm,205mm)
-		\begin{figure}
-			\vspace{-60pt}
-		\input{sho.tex}
-		\vspace{-20pt}
-		%\captionsetup{font = \tiny}
-		\caption{\scriptsize Schoenfeld residuals for BMI}
-		\end{figure}
-\end{textblock*}
+\model{3}{Log-normal proportional hazards model}
+$h(t \mid x_i) = h_0(t)\, e^{x_i\beta}$, with $S_0(t) = 1 - \Phi\bigl((\log t - a)/b\bigr)$ and $f_0 = -S_0'$:
+\[
+\mathcal{L} = \prod_{i=1}^{n}\frac{\bigl[f_0(t_i)\,S_0(t_i)^{e^{x_i\beta}-1}e^{x_i\beta}\bigr]^{\delta_i}\bigl[S_0(t_i)^{e^{x_i\beta}}\bigr]^{1-\delta_i}}{S_0(\alpha_i)^{e^{x_i\beta}}}
+\]
 
-\begin{textblock*}{80mm}(410mm,205mm)
-	\begin{figure}
-		\vspace{-60pt}
-	\input{devr.tex}
-	\vspace{-20pt}
-	%\captionsetup{font = \tiny}
-	\caption{\scriptsize Deviance residuals}
-	\end{figure}
-\end{textblock*}
+\model{4}{Log-normal PH model with normal frailty}
+$h(t \mid x_i, z_i) = h_0(t)\,e^{x_i\beta + z_i}$, $z_i \sim N(0, \sigma^2)$, fixed from the start of the job.
+Workers still employed at entry are a selected group, so the integral is divided by the chance of
+still being employed at $\alpha_i$, averaged over $z$ (delayed entry):
+\[
+\mathcal{L} = \prod_{i=1}^{n}\frac{\int g(z \mid 0,\sigma)\,\bigl[f_0(t_i)S_0(t_i)^{e^{x_i\beta+z}-1}e^{x_i\beta+z}\bigr]^{\delta_i}\bigl[S_0(t_i)^{e^{x_i\beta+z}}\bigr]^{1-\delta_i}dz}{\int g(z \mid 0,\sigma)\,S_0(\alpha_i)^{e^{x_i\beta+z}}\,dz}
+\]
+Each integral uses 30-point Gauss--Hermite quadrature (checked against 60 points and numerical integration):
+\[
+\int g(z \mid 0,\sigma)\,u(z)\,dz \approx \sum_{k=1}^{30} \frac{w_k}{\sqrt{\pi}}\,u\bigl(\sqrt{2}\,\sigma v_k\bigr)
+\]
+$\sigma = 0$ lies on the boundary, so the likelihood ratio test is referred to $\tfrac12\chi^2_0 + \tfrac12\chi^2_1$.
 
-\begin{textblock*}{80mm}(500mm,205mm)
-	\begin{figure}
-		\vspace{-60pt}
-		\input{mres.tex}
-		\vspace{-20pt}
-		%\captionsetup{font = \tiny}
-		\caption{\scriptsize Martingale residuals (BMI)}
-	\end{figure}
-\end{textblock*}
+\model{5}{Estimation and diagnostics}
+Every likelihood is written out in R and maximised with \texttt{optim} (BFGS), with standard errors from the Hessian.
+Proportional hazards: $\log(-\log \hat S)$ plots and a score test
+on Schoenfeld residuals, $g(t) = \log t$. Fit: Cox--Snell, martingale and deviance residuals.
+\end{minipage}%
+\hspace{\gutter}%
+% ======================================================================
+% column 2: figures
+% ======================================================================
+\begin{minipage}[t]{\colw}
+\bodysize
+\sect{Results}
+\fig{fig_km.tex}
+\figcap{Figure 1.}{Kaplan--Meier estimates of time to first exit from employment by BMI, with log-normal and
+Weibull curves fitted to each group. Of six baselines fitted without covariates, the log-normal has the lowest AIC
+(6,974; log-logistic 7,003, Weibull 7,103).}
 
-\begin{textblock*}{\textwidth}(380mm,264mm)
-	\scriptsize
-	\begin{minipage}{10cm}
-		% latex table generated in R 3.2.1 by xtable 1.8-0 package
-		% Sun Mar 13 14:41:59 2016
-		\begin{table}[ht]
-			\centering
-			\caption{Parameter estimates} 
-			\begin{tabular}{rrrrrrr}
-				\hline
-				 & \multicolumn{2}{c}{Cox Model} &  \multicolumn{2}{c}{Log Normal} & \multicolumn{2}{c}{Log Normal + frailty}  \\
-				& $\beta$ & se & $\beta$ & se & $\beta$ & se \\ 
-				\hline
-				$\sigma$ &  &  &  &  & 0.00290 & --$^{\dagger}$ \\ 
-				a &  &  & 0.57090 & 0.16444 & 0.57089 & 0.16224 \\ 
-				b &  &  & 1.28906 & 0.06473 & 1.28906 & 0.06401 \\ 
-				age & -0.02064 & 0.00372 & -0.01777 & 0.00327 & -0.01777 & 0.00325 \\ 
-				sex & -0.08108 & 0.06192 & -0.07384 & 0.06171 & -0.07386 & 0.06179 \\ 
-				black & 0.06089 & 0.07398 & 0.06243 & 0.07394 & 0.06243 & 0.07394 \\ 
-				other & -0.35131 & 0.11951 & -0.34528 & 0.11964 & -0.34528 & 0.11969 \\ 
-				wasmarried & 0.19059 & 0.09297 & 0.20600 & 0.09329 & 0.20599 & 0.09283 \\ 
-				nevermarried & 0.13059 & 0.07749 & 0.16974 & 0.07684 & 0.16973 & 0.07600 \\ 
-				publicinsur & 0.17449 & 0.09692 & 0.18697 & 0.09685 & 0.18696 & 0.09647 \\ 
-				privateinsur & -0.20124 & 0.07579 & -0.17900 & 0.07512 & -0.17901 & 0.07493 \\ 
-				lowinc & -0.20765 & 0.08875 & -0.19426 & 0.08850 & -0.19426 & 0.08850 \\ 
-				midinc & -0.33130 & 0.08571 & -0.31724 & 0.08551 & -0.31725 & 0.08547 \\ 
-				highinc & -0.55174 & 0.10147 & -0.53301 & 0.10086 & -0.53301 & 0.10119 \\ 
-				bmi & 0.18508 & 0.06621 & 0.18400 & 0.06607 & 0.18400 & 0.06623 \\ 
-				N & \multicolumn{2}{c}{6075} &  \multicolumn{2}{c}{6075} & \multicolumn{2}{c}{6075}  \\ 
-				$\mathcal{L}$ & \multicolumn{2}{c}{-7761.20151} & \multicolumn{2}{c}{-3381.60085} &  \multicolumn{2}{c}{-3381.60121} \\ 
-				\hline
-				\multicolumn{7}{r}{$^{\dagger}$ at its boundary; LR test of $\sigma = 0$: $p = 0.5$} \\
-			\end{tabular}
-		\end{table}	\end{minipage}
-	\end{textblock*}
+\vspace{0.7em}
+\begin{minipage}[t]{0.333\linewidth}\lab{(a)}\\\fig{fig_phcheck.tex}\end{minipage}%
+\begin{minipage}[t]{0.333\linewidth}\lab{(b)}\\\fig{fig_schoenfeld.tex}\end{minipage}%
+\begin{minipage}[t]{0.333\linewidth}\lab{(c)}\\\fig{fig_coxsnell.tex}\end{minipage}
+\figcap{Figure 2.}{Proportional hazards and overall fit. (a) $\log(-\log \hat S(t))$ by BMI: close to parallel.
+(b) Scaled Schoenfeld residuals for BMI from the Cox model, with a spline smooth ${\pm}2$ SE; dashed line, $\hat\beta$.
+Score test for BMI $p = 0.57$; global test across 12 covariates $p = 0.064$, where only being formerly married departs
+($p = 0.006$). (c) Cox--Snell residuals for the Cox and log-normal models: on the 45\textdegree{} line where 96\% of residuals lie ($r < 0.5$), above it in the sparse tail (52 exits).}
 
-\begin{textblock*}{\textwidth}(320mm,75mm)
-	\begin{tikzpicture}[]
-	\draw [line width=2pt, uwpurple](32,0) -- (59,0);
-	\end{tikzpicture}
-\end{textblock*}
+\vspace{0.7em}
+\begin{minipage}[t]{0.333\linewidth}\lab{(a)}\\\fig{fig_martingale.tex}\end{minipage}%
+\begin{minipage}[t]{0.333\linewidth}\lab{(b)}\\\fig{fig_deviance.tex}\end{minipage}%
+\begin{minipage}[t]{0.333\linewidth}\lab{(c)}\\\fig{fig_profile.tex}\end{minipage}
+\figcap{Figure 3.}{Residuals and frailty. (a) Martingale residuals against age, with a lowess smooth: flat, so age enters linearly.
+(b) Deviance residuals against the linear predictor: exits above zero, censored jobs below, no extreme values. (c) Profile log-likelihood for the frailty SD $\sigma$
+(all covariates, delayed entry), refitting every other parameter at each fixed $\sigma$; dotted line, the 95\% limit
+for a parameter on its boundary.}
+\end{minipage}%
+\hspace{\gutter}%
+% ======================================================================
+% column 3: table, frailty, conclusions
+% ======================================================================
+\begin{minipage}[t]{\colw}
+\bodysize
+\sect{Parameter estimates}
+{\sffamily\fontsize{11.5}{16}\selectfont\color{muted}{\color{fg}\textbf{Table 1.}}\hspace{0.4em}Parameter estimates (SE). Coefficients are log hazard ratios.}\par\vspace{0.3em}
+{\tabfont\fontsize{11.5}{15.5}\selectfont
+\setlength{\tabcolsep}{5pt}
+\input{figures/tab_estimates.tex}\par\vspace{0.3em}
+{\fontsize{10}{13.5}\selectfont\color{muted}\input{figures/tab_estimates_foot.tex}}\par}
 
+\sect{Is there unobserved heterogeneity?}
+With all covariates, $\hat\sigma = 0$ whether entry is handled by delayed entry or as in 2016 (${\mathrm{LR} = 0}$, ${p = 0.5}$),
+and the BMI estimate does not move. The profile likelihood is highest at $\sigma = 0$ and rules out $\sigma \ge 0.5$ (Figure 3c).
 
-\begin{textblock*}{\textwidth}(320mm,402mm)
-\tfont \fontsize{40pt}{50pt}\selectfont Conclusions
-\end{textblock*}
+With BMI alone, $\hat\sigma = 0.83$ (${\mathrm{LR} = 16.3}$, ${p < 0.001}$): the frailty stands in for the omitted covariates.
+Across six baselines with normal or gamma frailty, a frailty appears only with too few covariates or a rigid baseline.
+With all covariates, the log-normal model without frailty has the lowest AIC (6,791).
 
-\begin{textblock*}{\textwidth}(320mm,417mm)
-	\begin{tikzpicture}[]
-	\draw [line width=2pt, uwpurple](32,0) -- (59,0);
-	\end{tikzpicture}
-\end{textblock*}
+\sect{Conclusions}
+Obese workers had a \textbf{20\% higher hazard of leaving employment} (HR 1.20, 95\% CI 1.06--1.37). The estimate is the same in the Cox, log-normal and frailty models.
 
-\begin{textblock*}{270mm}(320mm,422mm)
-\small
-I estimate a significant 20\% (95\% CI: 6\% to 37\%) higher hazard (risk) of leaving employment for those with a BMI $\geq$ 30 compared to those below 30.
+The BMI effect is proportional over time, the log-normal baseline fits best, and there is no sign of unobserved heterogeneity once the covariates are in the model.
 
-This analysis is limited by  potential reverse causality (leaving work, and a subsequent sedentary lifestyle, could lead to obesity)
-\end{textblock*}
+\textbf{Limits.} BMI was measured partway through follow-up, so leaving work could have led to weight gain (reverse causation). Exit dates were reconstructed from round data, all exits are treated alike, and there is one panel. An extension with MEPS 2009--2018 and the NLSY79 (1982--2021), measuring BMI before follow-up and splitting exits by reason, is under way.
 
-\begin{textblock*}{290mm}(10mm,398mm)
-	\begin{tikzpicture}[]
-	\draw [line width=1pt, uwpurple](0,0) -- (29,0);
-	\end{tikzpicture}
+\vspace{0.8em}
+{\color{border}\rule{\linewidth}{0.8pt}}\par
+{\sffamily\fontsize{10.5}{14.5}\selectfont\color{muted}\textbf{About this version.} Revised November 2026 from the poster presented in March 2016. The analysis was rebuilt in R with every estimator written out (Kaplan--Meier, log-rank, Cox partial likelihood, parametric and frailty likelihoods, residuals, PH test), maximised with \texttt{optim} and checked against the \texttt{survival} package. The 2016 frailty model was fitted in mle, a likelihood language written by the course instructor (Holman 2003). The R refit integrates the frailty by Gauss--Hermite quadrature, uses delayed entry, and reproduces the 2016 log-likelihood. \textbf{Corrected from 2016:} the Cox partial likelihood (exponent $\delta_i$, risk set $R(t_i)$); the Kaplan--Meier and frailty notation; the standard errors of $\sigma$, $a$ and $b$ in the frailty column, which had each been typed one row out of place; the obesity cut-off (BMI above 30, as analysed); and the outcome (leaving employment, not unemployment). Standard errors come from \texttt{optim}'s Hessian: within 1\% of 2016's for the log-normal model, while mle's 2016 frailty-column standard errors were 3--7\% larger. Code and data: github.com/lubingas/obesity-employment-2016.
 
-	\footnotesize \textcolor{uwpurple}{Corrected November 2026.} The 2016 frailty model was fitted with mle, a likelihood language written by the course instructor (Holman 2003) and distributed as a stand-alone executable. So that anyone can inspect and rerun it with open tools, the likelihood was rewritten in R, with the frailty integral evaluated by Gauss–Hermite quadrature (checked against R's \texttt{integrate()}). The refit reproduces the 2016 log-likelihood; $\sigma$ is at its boundary, so frailty adds nothing and the BMI estimate is unchanged (Table 1, last column). Also corrected: the outcome label (leaving employment, i.e.\ any exit from work), a typo in the frailty likelihood and the rounding of the confidence interval. An extension with MEPS 2009–2018 and NLSY79 1982–2021, measuring BMI before follow-up and splitting exits by reason, is under way. Code and data: \href{https://github.com/lubingas/obesity-employment-2016}{github.com/lubingas/obesity-employment-2016}
-\end{textblock*}
-
-%\begin{textblock*}{270mm}(320mm,470mm)
-%\raggedleft \includegraphics{UWlogo.png}
-%\end{textblock*}
+Holman DJ (2003). mle: A programming language for building likelihood models. Version 2.1. Data: AHRQ, Medical Expenditure Panel Survey, Panel 14 (2009--2010).\par}
+\end{minipage}
 \end{document}

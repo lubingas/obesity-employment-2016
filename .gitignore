@@ -10,3 +10,7 @@
 *.toc
 *.synctex.gz
 ~$*
+
+# rebuilt by R/run_all.R
+output/*.rds
+output/*.log

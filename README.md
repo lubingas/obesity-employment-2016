@@ -1,18 +1,26 @@
 # Obesity and employment duration (2016)
 
-Do obese workers leave employment sooner? This is my UW CSSS 544 (event history analysis) project from 2016, with one update in 2026: the frailty model, which I originally fitted in mle, is now fitted in R with Gauss–Hermite quadrature.
+Do obese workers leave employment sooner? This is my UW CSSS 544 (event history analysis) project from 2016, rebuilt in 2026. Every estimator is now written out in R and maximised with `optim`, including the frailty model I originally fitted in mle.
 
-**Poster:** [`prj_poster.pdf`](prj_poster.pdf) (corrected November 2026). The poster as presented in March 2016 is [`prj_poster_2016.pdf`](prj_poster_2016.pdf).
+**Poster:** [`prj_poster.pdf`](prj_poster.pdf) (revised November 2026). The poster as presented in March 2016 is [`prj_poster_2016.pdf`](prj_poster_2016.pdf).
 
 ## Data and methods
 
-- **Data:** 6,075 workers aged 17–55 in Medical Expenditure Panel Survey (MEPS) Panel 14, 2009–2010. 1,131 left employment during follow-up. 1,682 (28%) were obese (BMI ≥ 30).
-- **Clock:** time is years since the job started, with left truncation at the tenure reached when follow-up began in 2009.
-- **Models:**
-  - Kaplan–Meier estimates and a Cox model, both allowing for left truncation
-  - parametric proportional-hazards models (exponential, Weibull, log-normal, Gompertz)
-  - a log-normal proportional-hazards model with normal unobserved heterogeneity (frailty)
+- **Data:** 6,075 workers aged 17–55 in Medical Expenditure Panel Survey (MEPS) Panel 14, 2009–2010. 1,131 left employment during follow-up.
+- **Exposure:** obese if the mean BMI over rounds 3 and 5 was above 30: 1,682 people (28%). Note that this is above 30, not 30 or more. 27 people with a mean of exactly 30.0 count as not obese.
+- **Clock:** years since the job started. Jobs already under way when follow-up began are left-truncated at the tenure reached then; 1,227 jobs began during follow-up.
 - **Covariates:** age, sex, race, marital status, insurance and income.
+- **Models:**
+  - Kaplan–Meier estimates and a log-rank test, with left-truncated risk sets
+  - a Cox model (delayed entry, Breslow ties)
+  - six parametric baselines (exponential, Weibull, log-normal, gamma, Gompertz, log-logistic)
+  - a log-normal proportional-hazards (PH) model
+  - the same model with normal unobserved heterogeneity (frailty)
+- **Diagnostics:**
+  - log(−log S) plots
+  - a Schoenfeld-residual score test of proportional hazards
+  - Cox–Snell, martingale and deviance residuals
+  - a likelihood ratio test and profile likelihood for the frailty SD σ
 
 ## Results
 
@@ -22,36 +30,74 @@ Do obese workers leave employment sooner? This is my UW CSSS 544 (event history 
 | Log-normal PH | 1.20 (1.06–1.37) |
 | Log-normal PH with frailty | 1.20 (1.06–1.37); σ at its boundary (0) |
 
-Obese workers had about a 20% higher hazard of leaving employment. Allowing for unobserved heterogeneity changes nothing: the frailty variance is estimated at zero.
+Obese workers had about a 20% higher hazard of leaving employment.
 
-## The 2026 update: Gauss–Hermite quadrature in place of mle
+- **Log-rank test:** χ² = 8.98, p = 0.003, with left-truncated risk sets. Ignoring left truncation gives χ² = 0.67, so the truncation matters.
+- **Proportional hazards:** the assumption holds for BMI (p = 0.57). The global test across all 12 covariates gives p = 0.064. Only being formerly married departs (p = 0.006).
+- **Baseline:** the log-normal has the lowest AIC of the six baselines, with and without covariates.
+- **No unobserved heterogeneity:**
+  - With all covariates, σ is estimated at 0 (LR = 0, p = 0.5). The profile likelihood is highest at σ = 0.
+  - With BMI alone and delayed entry, σ = 0.83 (p < 0.001). Here the frailty stands in for the omitted covariates.
+  - Across the six baselines with normal or gamma frailty, a frailty appears only with too few covariates or a rigid baseline.
 
-In 2016 I fitted the frailty model with mle, a programming language for building likelihood models written by the course instructor, Darryl Holman (Holman 2003). It is free for non-commercial use and is distributed as a stand-alone executable, so I rewrote the model in R, where anyone can inspect and rerun it with widely used open tools.
+## The 2026 rebuild
 
-[`Data/prj_frailty_ghq.R`](Data/prj_frailty_ghq.R) writes the frailty likelihood in R. Each person's likelihood is integrated over the frailty with 30-node Gauss–Hermite quadrature (checked against 60 nodes, and person by person against R's `integrate()`), on the log scale, and maximised with `maxLik`. It:
+The 2016 code (`Data/prj_analysis.R`, left as it was) fitted the parametric models with `maxLik` and used `survfit()`, `coxph()` and `cox.zph()` for the rest. It also contained my own Kaplan–Meier and Cox partial-likelihood functions. The Cox one never ran: its risk-set vectors were not set up inside the function, and its design matrix came from a data frame that didn't exist.
 
-- **Reproduces the 2016 mle fit:** log-likelihood −3381.601, the same coefficients, and σ at its lower boundary.
-- **Fixes the boundary standard errors:** mle's standard errors at the boundary were unreliable (an SE of 5.19 for the log-normal scale b). The R fit gives 0.064.
-- **Tests σ = 0 at the boundary:** a likelihood-ratio test with the boundary correction (half of a χ²₁), p = 0.5. A profile likelihood for σ peaks at 0.
-- **Compares two ways of handling left truncation:**
-  - dividing by S(t_α | z) inside the integral, as the poster's likelihood does
-  - standard delayed entry, which divides by S(t_α) averaged over the frailty
+The rebuild in `R/` finishes that job:
 
-  With all covariates, both give σ ≈ 0.
-- **Compares other baselines** (exponential, Weibull, Gompertz, log-logistic, gamma, piecewise exponential), each with no heterogeneity, normal frailty or gamma frailty. With all covariates, the log-normal model without frailty has the lowest AIC. The "frailty" that appears under the more rigid baselines, or with BMI alone, stands in for a misspecified baseline or omitted covariates. It is not evidence of unobserved heterogeneity.
+- **Shared design matrix:** one design matrix from `makeX()`, and the linear predictor is always `xb <- linpred(beta, x)`.
+- **Kaplan–Meier and log-rank test:** written with left-truncated risk sets, counted with sorted sums instead of loops.
+- **Cox model:** our own partial likelihood and its score, with delayed entry and Breslow ties, plus the Breslow baseline hazard.
+- **Parametric likelihoods:** every one is written on the log scale with left truncation, for any baseline that supplies log h₀(t) and H₀(t).
+- **Frailty:** normal frailty is integrated with 30-point Gauss–Hermite quadrature. It is checked against 60 points and against `integrate()`.
+- **Residuals:** Cox–Snell, martingale, deviance and Schoenfeld residuals, plus the score test of proportional hazards.
+- **Fitting:** everything is maximised with `optim` (BFGS), with standard errors from the Hessian.
+- **Checks:** each estimator is checked against the `survival` package as it runs:
+  - `survfit()`
+  - `coxph()`, including its score test and residuals
+  - `basehaz()`
+  - `cox.zph()`
 
-Results are in [`Data/frailty_baseline_comparison.csv`](Data/frailty_baseline_comparison.csv) and [`Data/frailty_profile.pdf`](Data/frailty_profile.pdf).
+  They agree to within 10⁻⁶. The checks are printed when you run the scripts.
+
+### What mle did, and the 2016 standard errors
+
+In 2016 I fitted the frailty model with mle, a programming language for building likelihood models written by the course instructor, Darryl Holman (Holman 2003). It is free for non-commercial use and is distributed as a stand-alone executable.
+
+The mle program file itself has not survived; only its data file, `anafil.dat`, has. But its output can be checked:
+
+- **mle maximised the likelihood on the poster.** At mle's 2016 estimates, that likelihood gives −3381.60094 in R; mle reported −3381.601.
+- **The 2016 table had the first three standard errors in the frailty column one row out of place.** It showed σ 0.17058, a 0.06376 and b 5.19397. Recomputed at mle's estimates, the SE of a is 0.163, the SE of b is 0.064, and the large value belongs to σ, which sits at its boundary. So the 5.19 was a copying slip in 2016. It does not mean mle's standard errors were unreliable, as an earlier version of this README said.
+- **mle's other standard errors were 3–7% larger** than those from the exact Hessian. This is probably due to how mle approximates the Hessian, but without the program file I can't confirm it.
+
+### Left truncation with frailty
+
+The 2016 likelihood divides by S(t_α | z) inside the frailty integral, as if each person's frailty were drawn when the survey began. The poster now uses standard delayed entry instead. Frailty is fixed from the start of the job, so the people still employed at entry are a selected group, and the whole integral is divided by S(t_α) averaged over the frailty. The two agree when σ = 0, and both give σ = 0 with all covariates. `05_frailty.R` fits both.
+
+### Numbers that moved
+
+The Cox and log-normal coefficients and log-likelihoods match 2016 to every printed digit. In the frailty column, mle had stopped just short of the maximum (−3381.60100 against −3381.60085), so its 2016 estimates differ in the third or fourth decimal (a 0.573 against 0.571).
+
+- **Standard errors, log-normal column:** these now come from `optim`'s Hessian, checked against `numDeriv`. They differ from the 2016 `maxLik` values by less than 1%; for example, the SE of a is 0.163 rather than 0.164.
+- **Standard errors, frailty column:** these are now in the right rows. They come from the R refit, not mle.
+- **Log-rank test:** it is now computed rather than typed in. It is χ² = 8.98, from the hypergeometric variance. The 2016 value, χ² = 8.97 with p = 0.002738, is exactly the Cox score test with Breslow ties, which also allows for truncation.
+- **Proportional-hazards test:** now the exact score test that `cox.zph()` has used since survival 3.0. The 2016-era approximation is in `R/00_functions.R` as `test.approx`.
 
 ## Poster corrections (November 2026)
 
-- **Table 1, frailty column:** replaced with the R quadrature estimates and labelled "Log Normal + frailty".
-- **Methods:** now say how the frailty integral is computed.
-- **Outcome label:** "unemployment" is now "leaving employment". The outcome is any exit from work, including leaving the labour force, not only unemployment.
-- **Frailty likelihood:** the hazard term read e^{xβ} where it should be e^{xβ+z}.
-- **Confidence interval:** the lower bound rounds to 6%, not 5% (exp(0.184 − 1.96 × 0.066) = 1.056).
-- **Dated note:** a note under the methods explains the move from mle to R and lists these corrections. The body text and equations are set slightly smaller to make room for it.
+The poster was rebuilt in LaTeX with the fonts and colours of my website: Source Serif 4 and Inter, both under the SIL Open Font License, shipped in `fonts/`. All figures and Table 1 are produced by `R/06_poster.R`.
 
-Apart from these, the Cox and log-normal columns, the figures and the conclusions are as in 2016.
+**Fixed from 2016:**
+
+- **Cox partial likelihood:** the δᵢ exponent was missing, so as written censored people contributed. The risk set is now R(tᵢ).
+- **Notation:** the Kaplan–Meier notation now uses d_k and strict entry (α_j < t_k). The frailty likelihood now has subscripts and dz.
+- **Frailty column SEs:** the standard errors of σ, a and b are now in the right rows.
+- **Obesity cut-off:** BMI above 30, as analysed.
+- **Outcome:** "leaving employment", any exit from work, not "unemployment".
+- **Log-likelihoods in the table:** the Cox log partial likelihood is now marked as not comparable with the full log-likelihoods.
+
+**New:** the profile likelihood for σ, the Cox–Snell comparison of the Cox and log-normal models, and martingale residuals against age.
 
 ## What comes next
 
@@ -72,15 +118,35 @@ I am extending this work to fix these:
 
 The results will be posted when ready.
 
+## How to run it
+
+From the repository root:
+
+```
+Rscript R/run_all.R          # about 10 minutes; writes output/ and figures/
+xelatex prj_poster.tex       # run twice, for the header
+```
+
+You need these R packages: `statmod`, `tikzDevice`, `png` (with `survival` and `splines` from base R). `survival` is used only for the checks; `numDeriv` is optional.
+
 ## Files
 
 | Path | What |
 |---|---|
-| `prj_poster.tex`, `prj_poster.pdf` | Corrected poster; the figures are the tikz files `kmlog.tex`, `phcheck.tex`, `sho.tex`, `devr.tex`, `mres.tex` |
+| `R/00_functions.R` | Every estimator: data and design matrix, `KMcalc`, `logrank`, `coxPHLik`/`coxPHScore`, `coxBaseHaz`, residuals and `schoenfeld`, parametric baselines, `PHLik` (with or without Gauss–Hermite frailty), and the `optim` wrapper `fitML` |
+| `R/01_km.R` | Kaplan–Meier by BMI, log-rank test, log(−log S) check |
+| `R/02_parametric.R` | Six baselines by AIC, log-normal and Weibull by BMI group, and log-normal PH models |
+| `R/03_cox.R` | Cox models from our partial likelihood |
+| `R/04_diagnostics.R` | Cox–Snell, martingale, deviance and Schoenfeld residuals, plus the PH test |
+| `R/05_frailty.R` | Frailty fits, LR tests, the 60-node and `integrate()` checks, the profile likelihood, and other baselines × normal or gamma frailty |
+| `R/06_poster.R` | Poster figures (tikz) and Table 1 |
+| `R/run_all.R` | Runs 01–06 in order |
+| `output/` | Results tables (`.csv`); the saved fits (`.rds`) are rebuilt by `run_all.R` and not tracked |
+| `figures/` | Poster figures and Table 1, written by `06_poster.R` |
+| `prj_poster.tex`, `prj_poster.pdf` | The revised poster |
 | `prj_poster_2016.pdf` | The poster as presented in 2016 |
-| `fonts/` | The poster's fonts (Encode Sans, Open Sans Condensed; SIL Open Font License), so it compiles anywhere with `xelatex prj_poster.tex` |
-| `Data/prj_analysis.R` | The 2016 analysis: Kaplan–Meier, Cox, parametric PH likelihoods with left truncation, residual checks and the poster figures. Left as written in 2016, so it still points at the old Windows paths. |
-| `Data/prj_frailty_ghq.R` | The 2026 R rewrite of the frailty model. Needs `maxLik`, `survival` and `statmod`. Sections 1–3 take about a minute; the profile likelihood and the baseline comparison take 6–8 minutes each. |
+| `fonts/` | Source Serif 4 and Inter (SIL Open Font License) |
+| `Data/prj_analysis.R` | The 2016 analysis, left as written in 2016, so it still points at the old Windows paths |
 | `Data/mepsempcsv.csv` | The analysis file, one row per person |
 
 ## References
@@ -93,6 +159,6 @@ Agency for Healthcare Research and Quality, Medical Expenditure Panel Survey, Pa
 
 ## Citation
 
-Lubinga SJ. *Obesity and Employment Duration: Continuous-Time Hazards Analyses.* Poster, CSSS 544, University of Washington, 2016; corrected 2026. https://github.com/lubingas/obesity-employment-2016
+Lubinga SJ. *Obesity and Employment Duration: Continuous-Time Hazards Analyses.* Poster, CSSS 544, University of Washington, 2016; revised 2026. https://github.com/lubingas/obesity-employment-2016
 
 Code: MIT License. Fonts: SIL Open Font License (see `fonts/`).
