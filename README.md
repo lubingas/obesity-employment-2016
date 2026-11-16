@@ -118,6 +118,108 @@ I am extending this work to fix these:
 
 The results will be posted when ready.
 
+## Theoretical model for the extension
+
+The extension treats leaving a job as the end of a worker–employer match. It asks whether obesity changes how fast matches end, and whose decision ends them. This section sets out the model that guides it; the results will be posted when ready.
+
+### The separation model
+
+A match lasts while both sides prefer it to their alternatives. Shocks arrive over time, and the match ends when one pushes either side past its threshold. For worker $`i`$ in job $`j`$ at tenure $`t`$:
+
+```math
+\text{employer keeps the match while}\quad y_{ij}(t) - w_{ij} - c_{ij} - d_{ij} \ge 0
+```
+
+```math
+\text{worker stays while}\quad w_{ij} + a_{ij} - e_{ij}(t) \ge \max\{\, b_i(t),\ \text{best outside offer} \,\}
+```
+
+The terms are:
+
+- $`y`$, productivity
+- $`w`$, the wage
+- $`c`$, non-wage cost, including the employer's share of health-insurance premiums
+- $`d`$, any distaste the employer, coworkers or customers have for the worker
+- $`a`$, job amenities
+- $`e`$, the disutility of work
+- $`b`$, the value of not working
+
+Wages are set at hire and adjust slowly within a match, so shocks end matches rather than just changing pay. Whatever the wage absorbs at hire shows up as a wage gap, not as extra separations.
+
+Each kind of shock produces its own exit, so the competing risks are defined by who ends the match and why:
+
+| Exit (who ends it) | Shock |
+|---|---|
+| Layoff (employer) | Productivity or demand falls, so $`y < w + c + d`$ |
+| Business closure (firm) | The whole business exits, whoever the worker is |
+| Health quit (worker) | Illness raises $`e`$ or lowers $`y`$ |
+| Other quit to non-work (worker) | $`b`$ rises: family, school, retirement |
+| Job-to-job (worker) | An outside offer beats the current match |
+
+Where the worker goes next (another job or none) is a separate outcome. It reflects outside offers.
+
+Suppose shocks arrive at rates that depend on tenure, and covariates scale the chance that a shock crosses a threshold. Then each exit $`k`$ has a mixed proportional hazard:
+
+```math
+\theta_k(t \mid x_i, \mathrm{ob}_i, v_{ik}) = \theta_{0k}(t)\,\exp\left(x_i'\beta_k + \gamma_k\,\mathrm{ob}_i + v_{ik}\right)
+```
+
+Here $`t`$ is tenure, $`\mathrm{ob}_i`$ is obesity measured before the interval, and $`v_{ik}`$ is unobserved heterogeneity, which can be correlated across exits. With a single exit type, a log-normal $`\theta_0`$ and normal $`v`$, this is the 2016 frailty model.
+
+The tenure shape also comes from theory. In Jovanovic's (1979) matching model, match quality is learned on the job. Poor matches end early and survivors build firm-specific skills, so the hazard rises briefly and then falls. That is the case for a hump-shaped baseline such as the log-normal.
+
+### How obesity enters
+
+| Channel | What moves in the model |
+|---|---|
+| Health and productivity | $`y`$ falls, $`e`$ rises, health shocks arrive faster |
+| Taste-based discrimination (Becker 1957) | $`d > 0`$, so obese workers sit nearer the layoff threshold |
+| Statistical discrimination (Altonji & Pierret 2001) | $`y`$ is judged lower early in a job; the gap fades as the employer learns |
+| Employer health-insurance cost (Bhattacharya & Bundorf 2009) | $`c`$ rises, but only for workers with employer coverage |
+| Job lock (Madrian 1994) | Workers who expect higher medical spending value employer coverage more, so quits fall |
+| Outside offers (Rooth 2009) | Fewer and worse offers |
+| Value of not working | $`b`$ shifts, through disability benefits or a spouse's income or coverage |
+
+The employer-side channels raise separations only to the extent that the wage did not absorb them at hire.
+
+### What each channel predicts
+
+A + means obesity raises that hazard, − lowers it, and 0 leaves it unchanged.
+
+| Channel | Layoff | Closure | Health quit | Other quit or retire | Job-to-job |
+|---|---|---|---|---|---|
+| Health and productivity | + | 0 | ++ | + | − |
+| Taste-based discrimination | + | 0 | 0 | 0 | − |
+| Statistical discrimination | + early in the job | 0 | 0 | 0 | − |
+| Employer insurance cost | + if covered by the employer | 0 | 0 | 0 | 0 |
+| Job lock | 0 | 0 | − | − | − |
+| Outside offers | 0 | 0 | 0 | 0 | − |
+| Unobserved confounders (time preference, earlier health, ability) | + | + if obese workers sort into fragile firms | + | + | + |
+
+Two exits separate the channels from confounding:
+
+- **Closures:** they happen whoever works at the firm, so no individual-level channel predicts an obesity effect. That makes them a negative-control outcome (Gibbons & Katz 1991; Lipsitch et al. 2010).
+- **Job-to-job moves:** every causal channel predicts fewer moves or no change, while confounding by impatience predicts more.
+
+### The likelihood
+
+In MEPS, exits are seen only between interviews. For a job held at $`t_0`$, the chance of exit $`k`$ in the interval $`(t_0, t_1]`$ is:
+
+```math
+\Pr(\text{exit } k \text{ in } (t_0,t_1] \mid \text{in job at } t_0) \approx \frac{\Delta\Lambda_k}{\sum_m \Delta\Lambda_m}\left[1-\exp\left(-\sum_m \Delta\Lambda_m\right)\right],
+\qquad \Delta\Lambda_k = e^{x'\beta_k+\gamma_k\mathrm{ob}}\left[\Lambda_{0k}(t_1)-\Lambda_{0k}(t_0)\right]
+```
+
+No exit has probability $`\exp(-\sum_m \Delta\Lambda_m)`$. The formula is exact when the exit-specific hazards stay proportional to each other within an interval (Narendranathan & Stewart 1993).
+
+Most jobs are already under way when first observed. So frailty is conditioned on the job lasting to entry tenure $`t_{e,i}`$ (Guo 1993; van den Berg & Drepper 2016):
+
+```math
+L_i = \frac{\int \prod_{r} P_{ir}(v)\; S(t_{e,i}\mid v)\, g(v)\, dv}{\int S(t_{e,i}\mid v)\, g(v)\, dv}
+```
+
+Here $`P_{ir}(v)`$ is interval $`r`$'s contribution given frailty $`v`$, and $`S`$ is survival in the job across all exits. This is the delayed-entry form the revised poster uses for the 2016 frailty model.
+
 ## How to run it
 
 From the repository root:
@@ -151,7 +253,29 @@ You need these R packages: `statmod`, `tikzDevice`, `png` (with `survival` and `
 
 ## References
 
+Altonji JG, Pierret CR (2001) Employer learning and statistical discrimination. *Quarterly Journal of Economics* 116(1):313–350.
+
+Becker GS (1957) *The Economics of Discrimination.* University of Chicago Press.
+
+Bhattacharya J, Bundorf MK (2009) The incidence of the healthcare costs of obesity. *Journal of Health Economics* 28(3):649–658. https://doi.org/10.1016/j.jhealeco.2009.02.009
+
+Gibbons R, Katz LF (1991) Layoffs and lemons. *Journal of Labor Economics* 9(4):351–380.
+
+Guo G (1993) Event-history analysis for left-truncated data. *Sociological Methodology* 23:217–243.
+
 Holman DJ (2003) mle: A programming language for building likelihood models. Version 2.1. Volume 1, User's Manual, and Volume 2, Reference Manual. [faculty.washington.edu/djholman/mle](https://faculty.washington.edu/djholman/mle/index.html)
+
+Jovanovic B (1979) Job matching and the theory of turnover. *Journal of Political Economy* 87(5):972–990.
+
+Lipsitch M, Tchetgen Tchetgen E, Cohen T (2010) Negative controls: a tool for detecting confounding and bias in observational studies. *Epidemiology* 21(3):383–388.
+
+Madrian BC (1994) Employment-based health insurance and job mobility: is there evidence of job-lock? *Quarterly Journal of Economics* 109(1):27–54.
+
+Narendranathan W, Stewart MB (1993) Modelling the probability of leaving unemployment: competing risks models with flexible base-line hazards. *Applied Statistics* 42(1):63–83.
+
+Rooth D-O (2009) Obesity, attractiveness, and differential treatment in hiring: a field experiment. *Journal of Human Resources* 44(3):710–735.
+
+van den Berg GJ, Drepper B (2016) Inference for shared-frailty survival models with left-truncated data. *Econometric Reviews* 35(6):1075–1098.
 
 ## Data source
 
